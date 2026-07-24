@@ -2,7 +2,7 @@
 
 ## Thong tin ca nhan
 
-- Ho va ten: Nguyen Minh Hien
+- Ho va ten: Pham The Dung
 - Lop/Nhom: Vin Smart Future Lab 02
 - Vai tro: AI Product Engineer tap su tai Vin Smart Future
 
@@ -10,14 +10,14 @@
 
 ## Phase 1 - SCAN: Danh sach bai toan co the ung dung AI
 
-| # | Subsidiary | Lens | Mo ta ngan bai toan |
-|---|---|---|---|
-| 1 | Xanh SM | Ton thoi gian | Dieu phoi vien mat nhieu thoi gian xu ly su co xe dien sap het pin giua duong: tra vi tri xe, tim tram sac con tru trong, soan huong dan cho tai xe. |
-| 2 | Vinhomes | Lap lai | Phan loai phan anh cu dan tren app Vinhomes Resident nhu mat nuoc, hong den, tieng on, ve sinh, roi chuyen ve dung bo phan xu ly. |
-| 3 | VinFast | AI-upgrade | Khach hang mo ta loi xe bang tieng Viet doi thuong, nhan vien ky thuat phai doc va phan loai thu cong thanh nhom loi ban dau. |
-| 4 | Vinpearl | Pain tu stakeholder | Quan ly khach san phai doc review tu nhieu kenh nhu Google, Agoda, Booking de tim phan nan khan cap va giao cho bo phan lien quan. |
-| 5 | Vinmec | Ton thoi gian | Bac si mat 20-30 phut moi benh nhan de viet tom tat xuat vien tu benh an, xet nghiem va ghi chu dieu tri. |
-| 6 | Xanh SM | Lap lai | Tong hop ly do huy chuyen tu ghi chu tai xe va cuoc goi CSKH de tim pattern gay ro ri doanh thu. |
+| #   | Subsidiary | Lens                | Mo ta ngan bai toan                                                                                                                                  |
+| --- | ---------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Xanh SM    | Ton thoi gian       | Dieu phoi vien mat nhieu thoi gian xu ly su co xe dien sap het pin giua duong: tra vi tri xe, tim tram sac con tru trong, soan huong dan cho tai xe. |
+| 2   | Vinhomes   | Lap lai             | Phan loai phan anh cu dan tren app Vinhomes Resident nhu mat nuoc, hong den, tieng on, ve sinh, roi chuyen ve dung bo phan xu ly.                    |
+| 3   | VinFast    | AI-upgrade          | Khach hang mo ta loi xe bang tieng Viet doi thuong, nhan vien ky thuat phai doc va phan loai thu cong thanh nhom loi ban dau.                        |
+| 4   | Vinpearl   | Pain tu stakeholder | Quan ly khach san phai doc review tu nhieu kenh nhu Google, Agoda, Booking de tim phan nan khan cap va giao cho bo phan lien quan.                   |
+| 5   | Vinmec     | Ton thoi gian       | Bac si mat 20-30 phut moi benh nhan de viet tom tat xuat vien tu benh an, xet nghiem va ghi chu dieu tri.                                            |
+| 6   | Xanh SM    | Lap lai             | Tong hop ly do huy chuyen tu ghi chu tai xe va cuoc goi CSKH de tim pattern gay ro ri doanh thu.                                                     |
 
 ---
 

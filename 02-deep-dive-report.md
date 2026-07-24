@@ -2,9 +2,10 @@
 
 ## Thong tin nhom
 
-- Ten nhom: Dungpt
+- Ten nhom: viminhhien
 - Thanh vien:
-  - Nguyen Minh Hien - MSSV: cap nhat theo thong tin ca nhan
+  - Pham The Dung
+  - MSSV: cap 2A202601985
 
 ---
 
@@ -37,13 +38,13 @@ Tai xe goi tong dai
 
 Bang workflow hien tai:
 
-| Buoc | Nguoi/He thong | Dau vao | Dau ra | Thoi gian TB | Ghi chu |
-|---|---|---|---|---:|---|
-| 1. Nhan cuoc goi su co | Dieu phoi vien | Cuoc goi tu tai xe | Log su co ban dau | 2 phut | Handoff tu tai xe sang tong dai |
-| 2. Tra vi tri xe | Dieu phoi vien + ban do noi bo | Bien so/ID xe | Toa do GPS | 2 phut | Co the cham neu he thong ban do lag |
-| 3. Tim tram sac phu hop | Dieu phoi vien + dashboard tram sac | GPS, loai xe, muc pin | Tram sac kha thi | 5 phut | Bottleneck: can so sanh nhieu dieu kien |
-| 4. Soan huong dan | Dieu phoi vien | Tram sac va vi tri xe | Tin nhan huong dan | 5 phut | Bottleneck: de sai/khong ro |
-| 5. Goi cuu ho neu can | Dieu phoi vien | Muc pin rat thap | Yeu cau cuu ho | 1 phut | Fallback thu cong |
+| Buoc                    | Nguoi/He thong                      | Dau vao               | Dau ra             | Thoi gian TB | Ghi chu                                 |
+| ----------------------- | ----------------------------------- | --------------------- | ------------------ | -----------: | --------------------------------------- |
+| 1. Nhan cuoc goi su co  | Dieu phoi vien                      | Cuoc goi tu tai xe    | Log su co ban dau  |       2 phut | Handoff tu tai xe sang tong dai         |
+| 2. Tra vi tri xe        | Dieu phoi vien + ban do noi bo      | Bien so/ID xe         | Toa do GPS         |       2 phut | Co the cham neu he thong ban do lag     |
+| 3. Tim tram sac phu hop | Dieu phoi vien + dashboard tram sac | GPS, loai xe, muc pin | Tram sac kha thi   |       5 phut | Bottleneck: can so sanh nhieu dieu kien |
+| 4. Soan huong dan       | Dieu phoi vien                      | Tram sac va vi tri xe | Tin nhan huong dan |       5 phut | Bottleneck: de sai/khong ro             |
+| 5. Goi cuu ho neu can   | Dieu phoi vien                      | Muc pin rat thap      | Yeu cau cuu ho     |       1 phut | Fallback thu cong                       |
 
 Tong thoi gian xu ly trung binh: **15 phut/luot**.
 
@@ -53,13 +54,13 @@ Hai bottleneck chinh la **Buoc 3** va **Buoc 4**, tong cong khoang 10 phut/luot.
 
 ## 3.2 Problem Statement 6-Field
 
-| Field | Noi dung chi tiet |
-|---|---|
-| 1. Actor / Operator | Dieu phoi vien trung tam van hanh Xanh SM, nguoi xu ly cuoc goi khan tu tai xe khi xe sap het pin hoac khong tim duoc tram sac phu hop. |
-| 2. Current Workflow | Dieu phoi vien nhan cuoc goi, tra vi tri GPS xe, mo dashboard tram sac VinFast, tim tram con tru trong va dung loai cong sac, sau do viet tin nhan huong dan cho tai xe. Neu pin qua thap thi goi doi cuu ho pin di dong. |
-| 3. Bottleneck | Buoc tim tram sac phu hop va soan huong dan mat 10-12 phut/luot. Dieu phoi vien phai xu ly nhieu thong tin cung luc: muc pin, khoang cach, loai cong sac, tinh trang tru sac, huong di va do khan cap. |
-| 4. Business Impact | Moi ngay uoc tinh co 60-80 su co lien quan den pin tai khu vuc do thi lon. Voi 15 phut/luot, team dieu phoi mat khoang 15-20 gio cong/ngay. Thoi gian cho lau lam tai xe bi tre chuyen, tang nguy co huy chuyen va giam trai nghiem khach hang. |
-| 5. Success Metric | Giam thoi gian xu ly tu 15 phut xuong duoi 3 phut/luot; 98% de xuat dung tram va dung loai cong sac; 100% tin nhan cho tai xe phai co dieu phoi vien duyet; 0 truong hop AI khuyen tai xe pin duoi 5% di den tram xa hon 5km. |
+| Field                   | Noi dung chi tiet                                                                                                                                                                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1. Actor / Operator     | Dieu phoi vien trung tam van hanh Xanh SM, nguoi xu ly cuoc goi khan tu tai xe khi xe sap het pin hoac khong tim duoc tram sac phu hop.                                                                                                                                                          |
+| 2. Current Workflow     | Dieu phoi vien nhan cuoc goi, tra vi tri GPS xe, mo dashboard tram sac VinFast, tim tram con tru trong va dung loai cong sac, sau do viet tin nhan huong dan cho tai xe. Neu pin qua thap thi goi doi cuu ho pin di dong.                                                                        |
+| 3. Bottleneck           | Buoc tim tram sac phu hop va soan huong dan mat 10-12 phut/luot. Dieu phoi vien phai xu ly nhieu thong tin cung luc: muc pin, khoang cach, loai cong sac, tinh trang tru sac, huong di va do khan cap.                                                                                           |
+| 4. Business Impact      | Moi ngay uoc tinh co 60-80 su co lien quan den pin tai khu vuc do thi lon. Voi 15 phut/luot, team dieu phoi mat khoang 15-20 gio cong/ngay. Thoi gian cho lau lam tai xe bi tre chuyen, tang nguy co huy chuyen va giam trai nghiem khach hang.                                                  |
+| 5. Success Metric       | Giam thoi gian xu ly tu 15 phut xuong duoi 3 phut/luot; 98% de xuat dung tram va dung loai cong sac; 100% tin nhan cho tai xe phai co dieu phoi vien duyet; 0 truong hop AI khuyen tai xe pin duoi 5% di den tram xa hon 5km.                                                                    |
 | 6. Operational Boundary | AI duoc doc du lieu dau vao, de xuat phuong an va tao draft tin nhan. AI khong duoc tu dong gui tin, khong duoc noi rang da gui tin, khong duoc tu suy doan du lieu thieu. Neu pin < 5% va tram xa > 5km, AI phai de xuat `dispatch_mobile_charger`. Moi draft phai bat dau bang `[DRAFT_ONLY]`. |
 
 ---
@@ -109,11 +110,11 @@ Neu AI khong co du du lieu, API tram sac loi, hoac output khong dung format:
 
 ### AI Readiness Checklist
 
-| Cau hoi | Trang thai | Ghi chu |
-|---|---|---|
-| Co du lieu mau/log sach de test? | Co dieu kien | Can log su co pin, vi tri xe, danh sach tram sac, thoi gian xu ly va ket qua dieu phoi. |
-| Rui ro khi AI sai co nam trong tam kiem soat? | Co | Co rule guard, HITL va fallback thu cong. AI khong duoc tu dong gui tin. |
-| Stakeholders san sang thay doi quy trinh? | Co dieu kien | Dispatcher can duoc training de xem AI la co-pilot, khong phai nguoi thay the. |
+| Cau hoi                                       | Trang thai   | Ghi chu                                                                                 |
+| --------------------------------------------- | ------------ | --------------------------------------------------------------------------------------- |
+| Co du lieu mau/log sach de test?              | Co dieu kien | Can log su co pin, vi tri xe, danh sach tram sac, thoi gian xu ly va ket qua dieu phoi. |
+| Rui ro khi AI sai co nam trong tam kiem soat? | Co           | Co rule guard, HITL va fallback thu cong. AI khong duoc tu dong gui tin.                |
+| Stakeholders san sang thay doi quy trinh?     | Co dieu kien | Dispatcher can duoc training de xem AI la co-pilot, khong phai nguoi thay the.          |
 
 ### Quyet dinh cuoi cung
 
