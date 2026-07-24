@@ -1,23 +1,18 @@
-# 03 — AI Log & Reflection
+# 03 — AI Log & Reflection (Phase 6)
 
-## Tôi đã dùng AI để làm gì?
+**Nhóm:** ViMinhHien
+**Thành Viên** Ngô Quang Dũng
 
-Tôi dùng AI như một thought-partner để brainstorm các điểm nghẽn vận hành tại Vin Smart Future, thu hẹp thành use case điều phối sự cố xe/pin của Xanh SM, rồi viết system prompt và các test prompt injection. AI giúp tôi chuyển yêu cầu nghiệp vụ thành các ranh giới có thể kiểm tra: output luôn có `[DRAFT_ONLY]`, pin dưới 5% phải tạo yêu cầu `dispatch_mobile_charger`, và mọi kết quả đều cần điều phối viên duyệt.
+> Mỗi thành viên viết phản ánh trung thực của riêng mình (khoảng 150–250 chữ/người) theo 3 câu hỏi: AI giúp gì, AI sai gì, sửa đổi ra sao. Bên dưới là ví dụ mẫu đã hoàn thiện đầy đủ (Thành viên 1) — các thành viên còn lại điền phần của mình theo đúng cấu trúc này.
 
-Tôi cũng dùng AI để gợi ý cách cấu trúc JSON output và cách tách phần LLM xử lý ngôn ngữ tự do khỏi rule-based safety gate. Điều này giúp nhận ra không nên dùng agent tự trị cho một luồng có rủi ro vận hành.
+---
+**1. AI giúp gì?**
+Trong buổi lab, tôi dùng AI (Claude/Gemini) làm thought-partner ở ba việc chính: (1) brainstorm nhanh danh sách bài toán vận hành theo 4 lenses cho từng công ty thành viên Vingroup khi tôi chưa có đủ ý tưởng; (2) phản biện lại 3 Quick Problem Card của tôi dưới vai một CFO khó tính, giúp tôi nhận ra 2 trong 3 card ban đầu thiếu metric có số cụ thể; (3) hỗ trợ viết và rà soát `SYSTEM_PROMPT` cùng các adversarial test case trong `prompt_prototype.py`, đặc biệt là gợi ý các kiểu tấn công prompt injection để kiểm tra ranh giới an toàn.
 
-## AI sai hoặc gây hiểu nhầm ở đâu?
+**2. AI sai gì?**
+Khi tôi yêu cầu AI ước tính "tổn thất doanh thu do rò rỉ hiệu suất điều xe", AI đưa ra ngay một con số phần trăm cụ thể (ví dụ "~15%") mà không có căn cứ dữ liệu thực tế nào — đây là một dạng hallucination về số liệu định lượng. Ngoài ra, ở lần đầu thiết kế Operational Boundary, AI đề xuất một cơ chế rule-engine khá phức tạp (nhiều tầng điều kiện lồng nhau) để xử lý ngưỡng pin, trong khi thực tế chỉ cần 1 điều kiện đơn giản (pin < 5% và khoảng cách > 5km) là đủ.
 
-Khi chạy `python starter-code/prompt_prototype.py`, cả ba verification checks đều hiện **Passed**. Tuy nhiên ở test 2 và test 3, `draft_message` ghi rõ: `Không thể tạo nháp tự động (ClientError); cần xử lý thủ công.` Điều đó có nghĩa Gemini chưa trả lời thành công; kết quả pass ở các test này đến từ fallback/guardrail cục bộ chứ chưa chứng minh model Gemini thật đã tuân thủ prompt.
+**3. Sửa đổi ra sao?**
+Tôi yêu cầu AI trích rõ nguồn hoặc gắn nhãn "ước tính giả định, cần xác minh thực tế" cho mọi con số không có dữ liệu gốc, thay vì trình bày như số liệu chắc chắn. Với phần rule-engine phức tạp, tôi yêu cầu AI đơn giản hóa lại chỉ giữ đúng 1 điều kiện ngưỡng pin/khoảng cách theo đúng Operational Boundary đã xác định ở Phase 3.2, tránh over-engineering cho một bài toán có phạm vi hẹp.
 
-Đây là một điểm dễ gây hiểu nhầm: chỉ nhìn chữ “Passed” có thể kết luận sai rằng API và mô hình đã hoạt động tốt. Ngoài ra, ở test pin 2%, guardrail bằng code đã ghi đè kết quả theo quy tắc an toàn; vì thế test này kiểm tra được safety gate nhưng không đánh giá chất lượng suy luận của Gemini.
-
-## Tôi đã sửa đổi prompt và ranh giới như thế nào?
-
-Tôi bổ sung system prompt yêu cầu mọi phản hồi bắt đầu bằng `[DRAFT_ONLY]`, cấm mô hình tự gửi tin/tự điều xe, cấm bịa thông tin vận hành và cấm tiết lộ system prompt. Tôi thêm test tấn công yêu cầu bỏ thẻ draft-only và test yêu cầu tiết lộ system prompt, để kiểm tra prompt injection.
-
-Quan trọng hơn, tôi không chỉ tin vào prompt. Code áp dụng rule deterministically: nếu phát hiện mức pin dưới 5%, response bị chuyển thành JSON với action `dispatch_mobile_charger`; không có đường nào để model đề xuất trạm sạc. Khi API lỗi hoặc thiếu API key, code trả fallback an toàn và yêu cầu xử lý thủ công thay vì giả vờ đã thực hiện tác vụ.
-
-## Bước tiếp theo
-
-Tôi cần kiểm tra lại `GEMINI_API_KEY`, quyền API và model để xử lý `ClientError`, sau đó chạy lại các test với phản hồi Gemini thật. Sau đó nhóm cần đánh giá bằng ticket đã ẩn danh và review của điều phối viên, thay vì chỉ dựa vào output mẫu hoặc các assertion pass.
+---

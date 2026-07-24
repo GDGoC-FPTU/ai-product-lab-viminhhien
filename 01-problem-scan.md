@@ -1,53 +1,116 @@
-# 01 — Problem Scan & Quick Assess
+# 01 — Problem Scan (Phase 1 & 2)
 
-> **Lưu ý:** Các mốc thời gian và metric dưới đây là ước tính ban đầu phục vụ scoping lab; cần đối chiếu log vận hành trước khi triển khai.
+**Nhóm:** ViMinhHien
+**Thành Viên** Ngô Quang Dũng
+**Mảng khảo sát chính:** Xanh SM (GSM) — Vận hành xe taxi điện thông minh
 
-## Phase 1 — SCAN: Bảng quét cơ hội
+> Ghi chú: File này tổng hợp Phase 1 (SCAN) và Phase 2 (QUICK-ASSESS) của cả nhóm. Mỗi thành viên bổ sung dòng SCAN + card riêng của mình theo đúng mẫu bên dưới trước khi merge vào `main`.
 
-| # | Công ty thành viên | Lens | Mô tả ngắn bài toán |
-|---|---|---|---|
-| 1 | Xanh SM | Lặp lại | Điều phối viên đọc ghi chú sự cố từ tài xế, phân loại mức độ khẩn và chuyển đúng nhóm hỗ trợ. |
-| 2 | Vinhomes | Tốn thời gian | Nhân viên CSKH đọc phản ánh tự do của cư dân, tra chính sách rồi soạn phản hồi nháp. |
-| 3 | VinFast | Lặp lại | Nhân viên hậu mãi tổng hợp nội dung cuộc gọi và ghi chú sửa chữa thành tóm tắt phiếu dịch vụ. |
-| 4 | Vinpearl / VinWonders | AI-upgrade | Chatbot trả lời câu hỏi về vé, giờ mở cửa và quy định nhưng chưa hiểu ngữ cảnh đơn đặt chỗ. |
-| 5 | Vinmec | Stakeholder Pain | Điều dưỡng phải gọi lại và sắp xếp lịch tái khám khi bệnh nhân gửi yêu cầu bằng ngôn ngữ tự do. |
-| 6 | Xanh SM | Stakeholder Pain | Tài xế báo sự cố pin/xe qua điện thoại; điều phối viên tra cứu thông tin và phản hồi thủ công, khiến tài xế chờ lâu. |
 
-## Phase 2 — QUICK-ASSESS: Ba Quick Problem Cards
+## 🔍 Phase 1 — SCAN: Bảng quét cơ hội
 
-### Card #1 — Phân loại và chuyển xử lý sự cố tài xế Xanh SM
+| # | Subsidiary | Lens | Mô tả ngắn bài toán |
+|---|------------|------|---------------------|
+| 1 | Xanh SM | Lặp lại | Phân bổ lại cuốc xe khi khách đổi điểm đến giữa chừng, điều phối viên phải thao tác lại thủ công trên hệ thống điều vận. |
+| 2 | Xanh SM | Tốn thời gian | Điều phối viên xử lý thủ công báo cáo sự cố sạc pin/hết pin của tài xế giữa đường, phải tra cứu trạm sạc và soạn hướng dẫn bằng tay. |
+| 3 | VinFast | Lặp lại | Đối chiếu hóa đơn sạc điện hằng tuần từ hàng nghìn trụ sạc đối tác với dữ liệu tài chính nội bộ. |
+| 4 | Vinhomes | AI-upgrade | Phân loại và điều hướng thủ công các phản ánh của cư dân (mất nước, hỏng đèn, ồn ào...) gửi qua App Vinhomes Resident đến đúng ban quản lý tòa nhà. |
+| 5 | Vinmec | Pain từ người khác | Bác sĩ mất 20–30 phút/bệnh nhân để soạn thảo tóm tắt hồ sơ xuất viện thủ công từ dữ liệu bệnh án điện tử. |
+| 6 | Vinpearl | Pain từ người khác | Quản lý khách sạn phải tự đọc thủ công hàng trăm review trên Booking.com/Agoda/Google Map mỗi tuần để lọc ra phàn nàn khẩn cấp. |
 
-- **Bài toán:** Rút ngắn thời gian điều phối viên đọc, phân loại và chuyển ticket sự cố do tài xế báo về.
-- **Công ty thành viên:** Xanh SM (GSM)
-- **Actor/Operator:** Điều phối viên trung tâm vận hành; tài xế là người chịu ảnh hưởng trực tiếp.
-- **Workflow thủ công hiện tại:** (1) Tài xế gọi điện hoặc gửi ghi chú trong ứng dụng → (2) điều phối viên ghi nhận ticket → (3) đọc ticket, xác định loại sự cố/độ khẩn → (4) chuyển cho đội cứu hộ, sạc, CSKH hoặc an toàn → (5) đội nhận ticket phản hồi tài xế.
-- **Bước tốn thời gian/lỗi nhất:** Bước 2–4 phải diễn giải ghi chú tự do và chọn đúng nhóm xử lý, **ước tính 6 phút/lượt**; dễ chuyển nhầm khi cao điểm.
-- **AI có thể hỗ trợ:** LLM tóm tắt, gán nhãn loại sự cố/độ khẩn và đề xuất nhóm nhận ticket; điều phối viên xác nhận trước khi chuyển.
-- **Metric thành công:** ≥**85%** ticket được tạo nháp phân loại dưới **30 giây**; giảm xử lý ban đầu từ **6 phút xuống dưới 2 phút/ticket**; tỷ lệ chuyển đúng nhóm ≥**95%**.
-- **Quick Architecture:** **LLM Feature + Rule**. Rule bắt các tình huống khẩn cấp; LLM chỉ xử lý mô tả tự do và tạo đề xuất.
+---
 
-### Card #2 — Soạn phản hồi nháp cho phản ánh cư dân Vinhomes
+## 🃏 Phase 2 — QUICK-ASSESS: 3 Quick Problem Cards
 
-- **Bài toán:** Hỗ trợ nhân viên CSKH Vinhomes soạn phản hồi nhất quán cho phản ánh cư dân, không tự cam kết chính sách hay chi phí.
-- **Công ty thành viên:** Vinhomes
-- **Actor/Operator:** Nhân viên CSKH ban quản lý; cư dân là người chờ phản hồi.
-- **Workflow thủ công hiện tại:** (1) Cư dân gửi phản ánh qua ứng dụng/call center → (2) nhân viên đọc và xác định chủ đề/ưu tiên → (3) tìm chính sách hoặc hỏi vận hành → (4) viết phản hồi, tạo yêu cầu xử lý → (5) gửi sau khi kiểm tra.
-- **Bước tốn thời gian/lỗi nhất:** Bước 2–4 phải tìm đúng thông tin rồi viết lại lịch sự, **ước tính 10 phút/yêu cầu**.
-- **AI có thể hỗ trợ:** Sau khi nhân viên chọn chính sách đã phê duyệt, LLM phân loại chủ đề, tóm tắt và soạn phản hồi nháp có trích nguồn nội bộ.
-- **Metric thành công:** Giảm từ **10 phút xuống dưới 3 phút/yêu cầu**; **90%** bản nháp được chấp nhận sau tối đa một lần sửa; không có nháp tự nêu phí hoặc cam kết SLA.
-- **Quick Architecture:** **LLM Feature (RAG có kiểm soát) + Human-in-the-loop**; AI chỉ tạo draft, nhân viên duyệt trước khi gửi.
+Top 3 bài toán được chọn từ bảng SCAN: **#2 (Xanh SM — sự cố sạc pin), #4 (Vinhomes — khiếu nại cư dân), #5 (Vinmec — tóm tắt xuất viện)**.
 
-### Card #3 — Tóm tắt phiếu dịch vụ hậu mãi VinFast
+### Quick Problem Card #1 — Xanh SM: Xử lý sự cố sạc pin thực địa
 
-- **Bài toán:** Giảm thời gian kỹ thuật viên tổng hợp cuộc gọi và ghi chú sửa chữa thành tóm tắt chuẩn cho phiếu dịch vụ VinFast.
-- **Công ty thành viên:** VinFast
-- **Actor/Operator:** Cố vấn dịch vụ/kỹ thuật viên tại xưởng; khách hàng chờ cập nhật trạng thái xe.
-- **Workflow thủ công hiện tại:** (1) Cố vấn tiếp nhận mô tả lỗi → (2) kỹ thuật viên kiểm tra và ghi chú → (3) cố vấn đọc các ghi chú/cuộc trao đổi → (4) soạn tóm tắt, hạng mục chờ xác nhận → (5) kiểm tra lại trước khi lưu hoặc cập nhật khách hàng.
-- **Bước tốn thời gian/lỗi nhất:** Bước 3–4 tổng hợp nhiều ghi chú kỹ thuật không đồng nhất, **ước tính 12 phút/phiếu**; dễ bỏ sót hạng mục cần xác nhận.
-- **AI có thể hỗ trợ:** LLM tạo tóm tắt có cấu trúc: triệu chứng, chẩn đoán, việc đã làm, việc chờ xác nhận và câu hỏi cần hỏi khách hàng.
-- **Metric thành công:** Giảm từ **12 phút xuống dưới 4 phút/phiếu**; **95%** tóm tắt có đủ năm trường bắt buộc; **100%** được cố vấn duyệt trước khi lưu/gửi.
-- **Quick Architecture:** **LLM Feature**. Dữ liệu chẩn đoán lấy bằng rule từ hệ thống; LLM không được tự kết luận nguyên nhân, báo giá, thay thế linh kiện hoặc gửi tin.
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ QUICK PROBLEM CARD #1                                        │
+│                                                               │
+│ Bài toán: Tài xế Xanh SM báo hết pin/sắp hết pin giữa đường, │
+│ cần điều phối viên tìm trạm sạc phù hợp và hướng dẫn di chuyển│
+│ Công ty thành viên: [x] Xanh SM (GSM)                        │
+│                                                               │
+│ Ai đang đau (Actor)? Tài xế (chờ đợi, lo lắng); Điều phối    │
+│ viên (quá tải giờ cao điểm)                                  │
+│                                                               │
+│ Workflow thủ công hiện tại (5 bước):                         │
+│  1. Nhận cuộc gọi sự cố ──> 2. Tra định vị GPS xe ──>        │
+│  3. Tra trạm sạc trống phù hợp loại cổng sạc ──>             │
+│  4. Soạn tin hướng dẫn gửi tài xế ──> 5. Gọi cứu hộ nếu cần  │
+│                                                               │
+│ Bước nào tốn thời gian/lỗi nhất? Bước 3–4 (⏱ 12 phút/lượt)   │
+│ AI có thể nhảy vào hỗ trợ ở bước nào? Bước 3–4 (tự động lấy  │
+│ vị trí, lọc trạm sạc trống theo loại xe, soạn nháp tin nhắn) │
+│                                                               │
+│ Đo thành công bằng gì (Metric có số)?                         │
+│ Giảm thời gian xử lý sự cố từ 17 phút ──> dưới 4 phút.       │
+│                                                               │
+│ Quick Architecture: [x] LLM Feature  [ ] Rule  [ ] Agent     │
+└─────────────────────────────────────────────────────────────┘
+```
 
-## Nhận định sơ bộ
+### Quick Problem Card #2 — Vinhomes: Phân loại khiếu nại cư dân
 
-Card #1 được chọn để deep-dive vì đầu vào ngắn, nhãn đầu ra rõ và giữ được điều phối viên trong vòng phê duyệt. Card #2 và #3 cần xác nhận chất lượng kho chính sách/dữ liệu trước khi prototype.
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ QUICK PROBLEM CARD #2                                        │
+│                                                               │
+│ Bài toán: Phân loại và điều hướng phản ánh của cư dân đến    │
+│ đúng ban quản lý tòa nhà phụ trách                           │
+│ Công ty thành viên: [x] Vinhomes                             │
+│                                                               │
+│ Ai đang đau (Actor)? Nhân viên CSKH tổng đài Vinhomes        │
+│ Resident, cư dân chờ phản hồi                                │
+│                                                               │
+│ Workflow thủ công hiện tại (4 bước):                         │
+│  1. Cư dân gửi phản ánh qua App ──> 2. Nhân viên CSKH đọc và │
+│  phân loại thủ công ──> 3. Chuyển tiếp email/tin cho đúng ban│
+│  quản lý ──> 4. Theo dõi phản hồi và cập nhật trạng thái     │
+│                                                               │
+│ Bước nào tốn thời gian/lỗi nhất? Bước 2 (⏱ trung bình        │
+│ 12 tiếng để phân loại và chuyển đúng nơi trong giờ cao điểm) │
+│ AI có thể nhảy vào hỗ trợ ở bước nào? Bước 2 (tự động phân   │
+│ loại danh mục + mức độ khẩn + gợi ý ban quản lý phụ trách)   │
+│                                                               │
+│ Đo thành công bằng gì (Metric có số)?                         │
+│ Giảm thời gian phân loại + chuyển tiếp từ 12 tiếng ──> dưới  │
+│ 30 phút; độ chính xác phân loại đạt ≥ 90%.                   │
+│                                                               │
+│ Quick Architecture: [ ] LLM Feature  [x] Rule + LLM hybrid   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Quick Problem Card #3 — Vinmec: Tóm tắt hồ sơ xuất viện
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ QUICK PROBLEM CARD #3                                        │
+│                                                               │
+│ Bài toán: Soạn thảo tóm tắt hồ sơ xuất viện bằng ngôn ngữ dễ │
+│ hiểu cho bệnh nhân từ dữ liệu bệnh án điện tử                │
+│ Công ty thành viên: [x] Vinmec                               │
+│                                                               │
+│ Ai đang đau (Actor)? Bác sĩ điều trị (quá tải giấy tờ)       │
+│                                                               │
+│ Workflow thủ công hiện tại (4 bước):                         │
+│  1. Trích xuất dữ liệu lâm sàng từ bệnh án điện tử ──>       │
+│  2. Đọc lại kết quả xét nghiệm & ghi chú điều trị ──>        │
+│  3. Soạn thảo bản tóm tắt xuất viện thủ công ──>             │
+│  4. Bác sĩ rà soát và ký duyệt                               │
+│                                                               │
+│ Bước nào tốn thời gian/lỗi nhất? Bước 2–3 (⏱ 25 phút/bệnh   │
+│ nhân, dễ bỏ sót chi tiết khi bác sĩ quá tải)                 │
+│ AI có thể nhảy vào hỗ trợ ở bước nào? Bước 2–3 (tự động tổng │
+│ hợp và draft bản tóm tắt, bác sĩ chỉ cần rà soát và ký)      │
+│                                                               │
+│ Đo thành công bằng gì (Metric có số)?                         │
+│ Giảm thời gian soạn tóm tắt từ 25 phút ──> dưới 8 phút/bệnh  │
+│ nhân, 100% vẫn qua bác sĩ ký duyệt trước khi phát hành.      │
+│                                                               │
+│ Quick Architecture: [x] LLM Feature (bắt buộc HITL)  [ ] Agent│
+└─────────────────────────────────────────────────────────────┘
+```
