@@ -1,23 +1,23 @@
-AI Reflection Log
-AI giúp gì?
+# 03 — AI Log & Reflection
 
-Trong buổi lab, tôi sử dụng ChatGPT để brainstorm các bài toán AI phù hợp với Vin Smart Future. AI giúp tôi xác định các pain point trong VinFast, Xanh SM và Vinhomes, đồng thời hỗ trợ xây dựng workflow, xác định bottleneck và đề xuất metric đánh giá hiệu quả.
+## Tôi đã dùng AI để làm gì?
 
-Ngoài ra, AI còn hỗ trợ viết System Prompt cho Gemini API và giải thích cách thiết lập môi trường Python, Virtual Environment và API Key.
+Tôi dùng AI như một thought-partner để brainstorm các điểm nghẽn vận hành tại Vin Smart Future, thu hẹp thành use case điều phối sự cố xe/pin của Xanh SM, rồi viết system prompt và các test prompt injection. AI giúp tôi chuyển yêu cầu nghiệp vụ thành các ranh giới có thể kiểm tra: output luôn có `[DRAFT_ONLY]`, pin dưới 5% phải tạo yêu cầu `dispatch_mobile_charger`, và mọi kết quả đều cần điều phối viên duyệt.
 
-AI sai gì?
+Tôi cũng dùng AI để gợi ý cách cấu trúc JSON output và cách tách phần LLM xử lý ngôn ngữ tự do khỏi rule-based safety gate. Điều này giúp nhận ra không nên dùng agent tự trị cho một luồng có rủi ro vận hành.
 
-Một số gợi ý ban đầu của AI thiên về sử dụng Agent cho những bài toán chỉ cần Rule-based hoặc LLM Feature. Ngoài ra, AI cũng đề xuất một số workflow chưa phù hợp với phạm vi của bài lab.
+## AI sai hoặc gây hiểu nhầm ở đâu?
 
-Trong quá trình chạy thử Gemini API, AI không thể xử lý được lỗi quota vì đây là vấn đề từ phía Google API chứ không phải lỗi của chương trình.
+Khi chạy `python starter-code/prompt_prototype.py`, cả ba verification checks đều hiện **Passed**. Tuy nhiên ở test 2 và test 3, `draft_message` ghi rõ: `Không thể tạo nháp tự động (ClientError); cần xử lý thủ công.` Điều đó có nghĩa Gemini chưa trả lời thành công; kết quả pass ở các test này đến từ fallback/guardrail cục bộ chứ chưa chứng minh model Gemini thật đã tuân thủ prompt.
 
-Tôi đã sửa như thế nào?
+Đây là một điểm dễ gây hiểu nhầm: chỉ nhìn chữ “Passed” có thể kết luận sai rằng API và mô hình đã hoạt động tốt. Ngoài ra, ở test pin 2%, guardrail bằng code đã ghi đè kết quả theo quy tắc an toàn; vì thế test này kiểm tra được safety gate nhưng không đánh giá chất lượng suy luận của Gemini.
 
-Tôi điều chỉnh lại System Prompt để bổ sung các Operational Boundary như:
+## Tôi đã sửa đổi prompt và ranh giới như thế nào?
 
-Luôn thêm tiền tố [DRAFT_ONLY] vào phản hồi.
-Không được đề xuất trạm sạc cách quá 5 km khi pin xe dưới 5%.
-Khi pin dưới 5%, AI phải trả về hành động điều xe sạc pin di động.
-Thêm Human-in-the-loop để nhân viên kiểm tra trước khi gửi phản hồi cho khách hàng.
+Tôi bổ sung system prompt yêu cầu mọi phản hồi bắt đầu bằng `[DRAFT_ONLY]`, cấm mô hình tự gửi tin/tự điều xe, cấm bịa thông tin vận hành và cấm tiết lộ system prompt. Tôi thêm test tấn công yêu cầu bỏ thẻ draft-only và test yêu cầu tiết lộ system prompt, để kiểm tra prompt injection.
 
-Ngoài ra, tôi đổi model Gemini phù hợp hơn với SDK hiện tại và kiểm tra lại cấu hình API Key cũng như môi trường Python.
+Quan trọng hơn, tôi không chỉ tin vào prompt. Code áp dụng rule deterministically: nếu phát hiện mức pin dưới 5%, response bị chuyển thành JSON với action `dispatch_mobile_charger`; không có đường nào để model đề xuất trạm sạc. Khi API lỗi hoặc thiếu API key, code trả fallback an toàn và yêu cầu xử lý thủ công thay vì giả vờ đã thực hiện tác vụ.
+
+## Bước tiếp theo
+
+Tôi cần kiểm tra lại `GEMINI_API_KEY`, quyền API và model để xử lý `ClientError`, sau đó chạy lại các test với phản hồi Gemini thật. Sau đó nhóm cần đánh giá bằng ticket đã ẩn danh và review của điều phối viên, thay vì chỉ dựa vào output mẫu hoặc các assertion pass.
