@@ -1,7 +1,7 @@
 # 🔍 Phase 1 — SCAN & Phase 2 — QUICK-ASSESS (Bài cá nhân)
 
-**Họ và tên:** *(Điền tên của bạn)*  
-**MSSV:** *(Điền MSSV)*  
+**Họ và tên:** *Vi Minh Hiển*  
+**MSSV:** *2A202601743*  
 
 ---
 
