@@ -6,11 +6,11 @@
 |---|---|
 | Tên nhóm | **ViMinhHien** |
 | Thành viên 1 | **Nguyễn Thế Khôi - 2A202601439** |
-| Thành viên 2 | **[ – MSSV]** |
-| Thành viên 3 | **[CẦN BỔ SUNG HỌ TÊN – MSSV]** |
-| Thành viên 4 | **[CẦN BỔ SUNG HỌ TÊN – MSSV]** |
-| Thành viên 5 | **[CẦN BỔ SUNG HỌ TÊN – MSSV]** |
-| Thành viên 6 | **[CẦN BỔ SUNG HỌ TÊN – MSSV]** |
+| Thành viên 2 | **[Nguyễn Văn Linh - 2A202601971]** |
+| Thành viên 3 | **[Phạm Thế Dũng] - 2A202601985** |
+| Thành viên 4 | **[Phạm Văn Lưu – 2A202601857]** |
+| Thành viên 5 | **Ngô Quang Dũng - 2A202601819** |
+| Thành viên 6 | **[Vi Minh Hiển – 2A202601743]** |
 
 > Các trường trong ngoặc vuông cần được nhóm thay bằng thông tin thật trước khi nộp.
 
