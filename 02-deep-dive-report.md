@@ -1,153 +1,117 @@
-# 🏗️ Phase 3 — DEEP-DIVE & Phase 5 — EVALUATE (Báo cáo nhóm)
+# 02 — Deep-Dive Report: Xanh SM Incident Triage Co-pilot
 
-**Tên nhóm:** *(Điền tên nhóm)*  
-**Thành viên:**
-| STT | Họ và tên | MSSV |
-|-----|-----------|------|
-| 1 | Vi Minh Hiển | 2A202601743 |
-| 2 | *(Điền tên)* | *(Điền MSSV)* |
-| 3 | *(Điền tên)* | *(Điền MSSV)* |
-| 4 | *(Điền tên)* | *(Điền MSSV)* |
+## Thông tin nhóm
 
-**Bài toán được chọn:** VinFast — Chẩn đoán lỗi xe từ mô tả tiếng Việt của khách hàng
+| Trường thông tin | Nội dung |
+|---|---|
+| Tên nhóm | **ViMinhHien** |
+| Thành viên 1 | **Nguyễn Thế Khôi - 2A202601439** |
+| Thành viên 2 | **[Nguyễn Văn Linh - 2A202601971]** |
+| Thành viên 3 | **[Phạm Thế Dũng] - 2A202601985** |
+| Thành viên 4 | **[Phạm Văn Lưu – 2A202601857]** |
+| Thành viên 5 | **Ngô Quang Dũng - 2A202601819** |
+| Thành viên 6 | **[Vi Minh Hiển – 2A202601743]** |
 
----
+> Các trường trong ngoặc vuông cần được nhóm thay bằng thông tin thật trước khi nộp.
 
-## 🗳️ Lý do lựa chọn bài toán
+## Quyết định lựa chọn
 
-Nhóm quyết định chọn bài toán **"Chẩn đoán lỗi xe từ mô tả tiếng Việt của khách hàng VinFast"** vì:
-- **Dữ liệu sẵn có:** VinFast đã có cơ sở dữ liệu mã lỗi DTC (Diagnostic Trouble Code) chuẩn hóa cho tất cả dòng xe.
-- **Pain point rõ ràng:** Kỹ thuật viên tổng đài quá tải (~12 phút/cuộc gọi), khách hàng chờ lâu — ảnh hưởng trực tiếp đến trải nghiệm khách hàng (NPS).
-- **Ranh giới an toàn dễ kiểm soát:** AI chỉ đề xuất mã lỗi (advisory), không tự ra quyết định sửa chữa. Luôn có HITL (kỹ thuật viên xác nhận).
-- **Dễ prototype:** Dùng LLM + structured JSON output để demo ngay.
+Nhóm chọn **Card #1 — Phân loại và chuyển xử lý sự cố tài xế Xanh SM** trong `01-problem-scan.md`. Scope pilot tập trung vào các ticket xe/pin được gửi qua ghi chú hoặc tổng đài. Trường hợp pin dưới 5% là nhánh rủi ro cao: AI không được đề xuất trạm sạc mà chỉ tạo yêu cầu xem xét xe sạc di động.
 
-### Lý do loại bỏ các thẻ khác:
-- **Card #2 (VinFast Trợ lý sạc thông minh):** Cần kiến trúc Agent phức tạp (truy cập nhiều API real-time), chưa phù hợp với scope buổi lab. Nên triển khai sau khi đã có baseline từ bài toán đơn giản hơn.
-- **Card #3 (Vinhomes Phân loại khiếu nại):** Rủi ro pháp lý cao — phân loại sai khiếu nại liên quan phí quản lý, tranh chấp căn hộ có thể dẫn đến khiếu kiện cho Vinhomes. Cần gom thêm dữ liệu và xây dựng rule-based router trước.
+## 3.1. Current-State Workflow
 
----
+Sơ đồ trực quan quy trình hiện tại: [04-workflow-diagram.png](04-workflow-diagram.png).
 
-## 3.1. Current-State Workflow Mapping
+| Bước | Người/hệ thống thực hiện | Đầu vào → đầu ra | Thời gian ước tính | Điểm cần chú ý |
+|---|---|---|---:|---|
+| 1. Báo sự cố | Tài xế → tổng đài/ứng dụng | Cuộc gọi hoặc ghi chú → nội dung thô | 2 phút | 🔄 Handoff tài xế → điều phối viên |
+| 2. Tạo ticket | Điều phối viên | Nội dung thô → ticket | 1 phút | 🔄 Handoff điện thoại/app → hệ thống ticket |
+| 3. Đọc và phân loại | Điều phối viên | Ticket → loại sự cố, độ khẩn, nhóm nhận | 5 phút | 🔴 Bottleneck: ghi chú tự do, dễ chuyển sai |
+| 4. Tra cứu/đề xuất hướng xử lý | Điều phối viên | Loại sự cố → hướng xử lý, tin nhắn | 3 phút | 🔴 Bottleneck: phải tra nhiều hệ thống; pin thấp cần xử lý cẩn trọng |
+| 5. Duyệt và phản hồi | Điều phối viên/đội nhận ticket | Tin nhắn/ticket → phản hồi tài xế | 1 phút | 🔄 Handoff điều phối → đội cứu hộ/sạc/CSKH |
 
-Quy trình xử lý cuộc gọi chẩn đoán lỗi xe hiện tại của kỹ thuật viên tổng đài VinFast:
-
-```text
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│ Bước 1       │     │ Bước 2       │     │ Bước 3       │     │ Bước 4       │     │ Bước 5       │
-│ Nhận cuộc    │     │ Ghi chú mô   │     │ Tra cứu CSDL │     │ Đối chiếu &  │     │ Tư vấn khách │
-│ gọi từ KH    │ ──→ │ tả triệu     │ ──→ │ mã lỗi DTC   │ ──→ │ chọn top-3   │ ──→ │ mang xe đến  │
-│              │     │ chứng vào CRM │     │ (~800 mã)    │     │ mã khả nghi  │     │ đại lý/xưởng │
-│ Ai: KTV      │     │ Ai: KTV      │     │ Ai: KTV      │     │ Ai: KTV      │     │ Ai: KTV      │
-│ ⏱ 1 phút     │     │ ⏱ 1 phút     │     │ ⏱ 5 phút 🔴  │     │ ⏱ 5 phút 🔴  │     │ ⏱ 2 phút     │
-│ In: Cuộc gọi │     │ In: Lời KH   │     │ In: Từ khóa  │     │ In: Danh sách│     │ In: Mã DTC   │
-│ Out: Tiếp nhận│    │ Out: Ghi chú │     │ Out: Mã DTC  │     │ Out: Top-3   │     │ Out: Lịch hẹn│
-└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
-
-🔴 = Bottlenecks (Bước 3 & 4)
-🔄 Handoff: Bước 1→2 (chuyển từ hệ thống điện thoại sang CRM)
-             Bước 4→5 (chuyển từ CRM sang hệ thống đặt lịch đại lý)
-⏱ Tổng thời gian xử lý thủ công: 14 phút/cuộc gọi
-```
-
-### Phân tích Bottleneck:
-- **Bước 3 (5 phút):** KTV phải tìm kiếm thủ công trong ~800 mã DTC. Hệ thống CRM hiện tại chỉ hỗ trợ tìm theo keyword tiếng Anh, trong khi khách mô tả bằng tiếng Việt → KTV phải tự dịch/diễn giải.
-- **Bước 4 (5 phút):** Mô tả tiếng Việt đa nghĩa gây nhầm lẫn. Ví dụ: *"xe kêu cụp cụp ở bánh trước"* có thể là lỗi giảm xóc (DTC C0034), lỗi phanh (DTC C0035), hoặc lỗi thanh cân bằng (DTC C0056) — 3 mã hoàn toàn khác nhau. Tỉ lệ phân loại sai lần đầu: **~22%**.
-
----
+**Tổng thời gian baseline cần xác nhận từ log: khoảng 12 phút/ticket.** Các thời lượng là giả định để thiết kế pilot, không phải số liệu nội bộ đã được xác minh.
 
 ## 3.2. Problem Statement (6-field)
 
-| Field | Nội dung chi tiết |
+| Field | Nội dung |
 |---|---|
-| **1. Actor / Operator** | Kỹ thuật viên tổng đài (Technical Support Agent) thuộc Trung tâm Hỗ trợ Khách hàng VinFast. |
-| **2. Current Workflow** | Khi khách hàng gọi hotline mô tả triệu chứng xe bằng tiếng Việt, KTV ghi chú vào CRM, tra cứu thủ công cơ sở dữ liệu ~800 mã lỗi DTC (Diagnostic Trouble Code), đối chiếu triệu chứng để chọn top-3 mã khả nghi, rồi tư vấn khách mang xe đến đại lý hoặc lên lịch hẹn kỹ thuật viên thực địa. Quy trình 5 bước, hoàn toàn thủ công, mất **14 phút/cuộc gọi**. |
-| **3. Bottleneck** | Bước 3 & 4 (chiếm 10 phút): Tra cứu thủ công mã DTC và đối chiếu triệu chứng. Khách hàng mô tả bằng tiếng Việt tự nhiên đa nghĩa (ví dụ: *"kêu cụp cụp"*, *"rung lắc khi phanh"*, *"mùi khét ở đầu xe"*), trong khi CSDL mã DTC dùng thuật ngữ kỹ thuật tiếng Anh. Tỉ lệ phân loại sai lần đầu: **22%**, dẫn đến khách phải gọi lại hoặc mang xe đến sai xưởng. |
-| **4. Business Impact** | Trung tâm tiếp nhận trung bình **350 cuộc gọi/ngày** tại Hà Nội. Mỗi cuộc mất 14 phút → tổng **81.7 giờ-nhân/ngày**. Tỉ lệ phân loại sai 22% gây ra **~77 cuộc gọi lại/ngày**, lãng phí thêm **18 giờ-nhân/ngày**. Chi phí ẩn: khách hàng phàn nàn trên mạng xã hội làm giảm NPS của VinFast khoảng **3-5 điểm**. Ước tính tổn thất nhân sự: **~25 triệu VNĐ/tháng** (chi phí overtime + tuyển thêm KTV). |
-| **5. Success Metric** | 1. Giảm thời gian xử lý cuộc gọi từ 14 phút xuống **dưới 5 phút** (Efficiency). <br>2. Tỉ lệ phân loại đúng mã DTC (top-3 match) đạt **≥ 90%** so với 78% hiện tại (Quality). <br>3. Giảm tỉ lệ khách gọi lại vì phân loại sai từ 22% xuống **dưới 8%** (Customer Satisfaction). |
-| **6. Operational Boundary** | AI được phép: Đọc mô tả tiếng Việt của khách → phân tích NLU → trả về top-3 mã DTC khả nghi kèm confidence score → hiển thị cho KTV xem xét. **CẤM:** (1) AI không được tự động xác nhận mã lỗi cuối cùng mà không có KTV phê duyệt (Bắt buộc HITL). (2) AI không được đưa ra hướng dẫn sửa chữa cụ thể cho khách hàng (chỉ đề xuất mã lỗi). (3) AI không được truy cập thông tin cá nhân của khách hàng ngoài mô tả triệu chứng xe. |
-
----
+| **1. Actor / Operator** | Điều phối viên tại trung tâm vận hành Xanh SM. Tài xế là người gửi thông tin và chịu ảnh hưởng bởi thời gian xử lý. |
+| **2. Current Workflow** | Điều phối viên nhận cuộc gọi/ghi chú, tạo ticket, đọc nội dung tự do, tự phân loại mức độ khẩn, tra cứu hướng xử lý và chuyển ticket cho đội phù hợp. Quy trình gồm 5 bước, baseline giả định 12 phút/ticket. |
+| **3. Bottleneck** | Phân loại và tra cứu (bước 3–4, khoảng 8 phút): một ticket có thể chứa vị trí, mức pin, triệu chứng xe và yêu cầu khẩn; nội dung thiếu cấu trúc dẫn đến chuyển sai nhóm hoặc bỏ sót dấu hiệu pin nguy cấp. |
+| **4. Business Impact** | Ticket xử lý chậm làm tài xế chờ, kéo dài thời gian xe không sẵn sàng nhận cuốc và tăng tải cho điều phối viên. Tác động định lượng sẽ được đo bằng số ticket, thời gian xử lý và tỷ lệ chuyển sai trong pilot. |
+| **5. Success Metric** | (1) ≥85% ticket được tạo bản nháp phân loại dưới 30 giây; (2) thời gian xử lý ban đầu trung vị giảm từ baseline 12 phút xuống ≤4 phút/ticket; (3) ≥95% ticket được chuyển đúng nhóm sau lần duyệt đầu; (4) 100% trường hợp pin <5% có `dispatch_mobile_charger` dạng nháp và có người duyệt. |
+| **6. Operational Boundary** | AI chỉ đọc ticket đã được cấp quyền, tóm tắt, gán nhãn và tạo **nháp**. AI không được gửi tin, điều xe, xác nhận trạm sạc, tiết lộ dữ liệu nội bộ hoặc tự quyết tình huống khẩn. Mọi action đều cần điều phối viên duyệt; pin <5% không được đề xuất trạm sạc. |
 
 ## 3.3. Future-State Flow & AI Fit
 
-### AI Fit: **LLM Feature**
+### AI Fit
 
-**Lý do chọn LLM Feature thay vì các mức khác:**
+Giải pháp là **LLM Feature có Rule-based safety gate**, không phải Agentic Loop:
 
-| Lựa chọn | Đánh giá |
-|-----------|----------|
-| **Rule / State-Machine** | ❌ Không đủ — Mô tả tiếng Việt tự nhiên quá đa dạng, không thể enumerate tất cả biến thể bằng rule. Ví dụ: "kêu cụp cụp", "có tiếng động lạ phía trước", "nghe lộp cộp khi đi ổ gà" đều cùng 1 lỗi nhưng diễn đạt khác nhau hoàn toàn. |
-| **LLM Feature** | ✅ Phù hợp — LLM hiểu ngôn ngữ tự nhiên tiếng Việt, mapping sang mã DTC kỹ thuật. Quy trình có cấu trúc cố định (input text → output top-3 codes), chỉ cần 1 API call. |
-| **Agentic Loop** | ❌ Quá phức tạp — Không cần agent tự trị vì không có bước ra quyết định phức tạp hay truy cập nhiều tool. Rủi ro over-engineering. |
+- **Rule/State machine:** đọc mức pin có cấu trúc; nếu `<5%`, khóa đường đề xuất trạm sạc và tạo action `dispatch_mobile_charger` dạng nháp.
+- **LLM Feature:** tóm tắt ticket tiếng Việt, đề xuất nhãn loại sự cố/độ khẩn và soạn tin nhắn nháp.
+- **Không dùng Agent tự trị:** hệ thống không được tự gửi tin, tự điều xe hoặc gọi dịch vụ bên ngoài.
 
-### Quy trình tương lai (Future-State Flow):
+### Future-state flow
 
 ```text
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│ Bước 1       │     │ Bước 2       │     │ Bước 3       │     │ Bước 4       │
-│ Nhận cuộc    │     │ 🔵 AI phân   │     │ 🟢 KTV xác   │     │ KTV tư vấn   │
-│ gọi từ KH    │ ──→ │ tích mô tả   │ ──→ │ nhận/sửa mã  │ ──→ │ & lên lịch   │
-│              │     │ → top-3 DTC  │     │ DTC đề xuất  │     │ hẹn cho KH   │
-│ Ai: KTV      │     │ Ai: LLM      │     │ Ai: KTV (HITL)│    │ Ai: KTV      │
-│ ⏱ 1 phút     │     │ ⏱ 5 giây     │     │ ⏱ 1 phút     │     │ ⏱ 2 phút     │
-└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
-                                                │
-                                                ▼
-                                         ↩️ Fallback:
-                                         Nếu confidence score
-                                         của cả 3 mã DTC < 60%,
-                                         hệ thống cảnh báo KTV
-                                         và KTV tra cứu thủ công
-                                         như quy trình cũ.
-
-🔵 = AI Step (LLM xử lý)
-🟢 = Human-in-the-loop (KTV phê duyệt)
-↩️ = Fallback (kế hoạch dự phòng)
-
-⏱ Tổng thời gian xử lý mới: ~4 phút/cuộc gọi (giảm 71% so với 14 phút)
+Tài xế báo sự cố
+       ↓
+🔵 Rule lấy trường mức pin + kiểm tra dữ liệu bắt buộc
+       ↓
+Nếu pin <5% ──→ 🔵 Tạo nháp {action: dispatch_mobile_charger}
+       │                         ↓
+       │                    🟢 Điều phối viên xác minh vị trí, duyệt/điều xe
+       ↓ (pin ≥5% hoặc chưa rõ)
+🔵 LLM tóm tắt ticket + đề xuất nhãn, nhóm nhận và [DRAFT_ONLY]
+       ↓
+🟢 Điều phối viên kiểm tra dữ liệu, sửa/duyệt
+       ↓
+Gửi tin/chuyển ticket qua hệ thống hiện có
+       ↓
+↩️ Fallback: nếu thiếu dữ liệu, confidence thấp, Gemini lỗi hoặc prompt injection
+   → không tự động hành động; điều phối viên dùng SOP và xử lý ticket thủ công.
 ```
 
-### Chi tiết AI Step (Bước 2):
-- **Input:** Mô tả triệu chứng bằng tiếng Việt tự nhiên từ khách hàng + dòng xe (VF5/VFe34/VF8/VF9)
-- **Processing:** LLM (Gemini 2.5 Flash) phân tích ngữ nghĩa → mapping sang top-3 mã DTC
-- **Output (Structured JSON):**
-```json
-{
-  "vehicle_model": "VF8",
-  "symptom_summary": "Tiếng động lạ phía bánh trước khi đi qua gờ giảm tốc",
-  "top_3_dtc": [
-    {"code": "C0034", "description": "Front Suspension Strut Fault", "confidence": 0.85},
-    {"code": "C0056", "description": "Stabilizer Bar Link Worn", "confidence": 0.72},
-    {"code": "C0035", "description": "Front Brake Caliper Issue", "confidence": 0.45}
-  ],
-  "recommended_action": "Đề xuất khách mang xe đến đại lý VinFast để kiểm tra hệ thống treo trước",
-  "urgency": "medium"
-}
-```
+### Human-in-the-loop và fallback
 
----
+| Tình huống | Hệ thống được phép làm | Con người/fallback |
+|---|---|---|
+| Ticket đủ dữ liệu, không khẩn | Tạo nhãn và tin nhắn `[DRAFT_ONLY]` | Điều phối viên duyệt trước khi chuyển/gửi |
+| Pin dưới 5% | Khóa đề xuất trạm sạc; tạo nháp `dispatch_mobile_charger` | Điều phối viên kiểm tra GPS, mức pin và quyết định điều xe |
+| Thiếu mức pin/vị trí, confidence thấp | Yêu cầu bổ sung thông tin, không suy đoán | Điều phối viên gọi lại tài xế theo SOP |
+| Gemini/API lỗi hoặc có prompt injection | Trả fallback an toàn, không thực hiện action | Xử lý thủ công và ghi log sự cố kỹ thuật |
 
-# 🏁 Phase 5 — EVALUATE
+## 5. Evaluate
 
-## AI Readiness Checklist:
+### AI Readiness Checklist
 
-| # | Câu hỏi | Trả lời |
-|---|---------|---------|
-| 1 | Chúng tôi có sẵn dữ liệu mẫu/logs sạch để test? | ✅ **Có.** VinFast có CSDL ~800 mã DTC chuẩn hóa theo tiêu chuẩn OBD-II quốc tế. Ngoài ra, hệ thống CRM lưu trữ lịch sử ~150,000 cuộc gọi/năm kèm ghi chú triệu chứng bằng tiếng Việt — đủ để fine-tune và evaluation. |
-| 2 | Rủi ro khi AI sai có nằm trong tầm kiểm soát? | ✅ **Có.** AI chỉ đề xuất top-3 mã DTC (advisory), KTV bắt buộc phê duyệt trước khi tư vấn khách (HITL). Nếu confidence < 60%, fallback về quy trình thủ công. Rủi ro sai sót không ảnh hưởng trực tiếp đến an toàn xe (chỉ ảnh hưởng đến tốc độ phân loại). |
-| 3 | Stakeholders sẵn sàng thay đổi quy trình? | ✅ **Có.** Trưởng phòng Tổng đài VinFast đã phàn nàn về tình trạng quá tải KTV (turnover rate 30%/năm). Đội ngũ KTV sẵn sàng chấp nhận công cụ hỗ trợ vì giảm áp lực tra cứu thủ công. |
+| Câu hỏi | Trạng thái | Bằng chứng / việc cần làm |
+|---|---|---|
+| Có dữ liệu mẫu/logs sạch để test? | ⚠️ Chưa xác nhận | Cần xin ticket đã ẩn danh, nhãn lịch sử và tiêu chuẩn phân loại của vận hành. |
+| Rủi ro khi AI sai có kiểm soát được? | ✅ Có điều kiện | Có rule pin `<5%`, output draft-only, HITL và fallback thủ công; cần kiểm thử với ticket thực tế. |
+| Stakeholder sẵn sàng đổi quy trình? | ⚠️ Chưa xác nhận | Cần một trưởng ca đồng ý pilot và quy định SLA duyệt nháp. |
+| Gemini endpoint chạy thành công? | ❌ Chưa | Lần chạy prototype nhận `ClientError`; output vẫn pass nhờ guardrail cục bộ, chưa chứng minh model thật hoạt động. |
 
-## Quyết định cuối cùng:
+### Quyết định: **NOT YET**
 
-### ✅ **GO (Bắt đầu xây dựng Prototype)**
+Chưa nên triển khai pilot có người dùng thật. Prototype đã chứng minh được ranh giới cục bộ: pin 2% bị chuyển thành `dispatch_mobile_charger` dạng nháp và các test bypass `[DRAFT_ONLY]` đều pass. Tuy nhiên `ClientError` ở các test Gemini cho thấy API/model chưa sẵn sàng, nên chưa có kết quả đánh giá chất lượng LLM trên dữ liệu thật. Đồng thời chưa có log ticket đã ẩn danh, baseline 12 phút và tỷ lệ chuyển sai để xác minh metric.
 
-**Justification:**
+### Điều kiện để chuyển sang GO
 
-> **Lý giải kỹ thuật:** Bài toán có đầy đủ điều kiện để triển khai MVP:
-> 1. **Dữ liệu sẵn có** — CSDL mã DTC chuẩn hóa + 150K cuộc gọi lịch sử làm training/eval data.
-> 2. **Kiến trúc đơn giản** — Chỉ cần 1 LLM API call (Gemini 2.5 Flash), không cần multi-agent hay infrastructure phức tạp.
-> 3. **Rủi ro thấp** — AI chỉ advisory, luôn có HITL, có fallback khi confidence thấp. Sai sót không ảnh hưởng an toàn xe.
-> 4. **ROI rõ ràng** — Giảm 71% thời gian xử lý (14 phút → 4 phút), tiết kiệm ~25 triệu VNĐ/tháng chi phí nhân sự overtime.
-> 5. **Chi phí triển khai thấp** — Gemini 2.5 Flash: ~$0.15/1M input tokens. Với 350 cuộc gọi/ngày × ~200 tokens/cuộc = 70K tokens/ngày ≈ **$0.01/ngày** (~300 VNĐ/ngày). Gần như miễn phí so với giá trị tiết kiệm.
->
-> **Scope MVP đề xuất:** Triển khai pilot 2 tuần tại Trung tâm Hỗ trợ KH VinFast Hà Nội, chỉ áp dụng cho dòng xe VF8 (dòng xe có nhiều cuộc gọi nhất), đánh giá accuracy trên 500 cuộc gọi đầu tiên trước khi mở rộng.
+1. Cấu hình API key hợp lệ, kiểm tra quyền dùng `gemini-2.5-flash`, và lưu nguyên nhân lỗi nếu gọi thất bại.
+2. Chuẩn bị tập dữ liệu pilot đã ẩn danh: tối thiểu 100 ticket, có nhãn chuẩn do vận hành duyệt và bộ test chứa tình huống pin nguy cấp/prompt injection.
+3. Chạy shadow mode 2 tuần: AI chỉ tạo draft, điều phối viên làm như cũ; đo latency, tỷ lệ duyệt, tỷ lệ chuyển đúng và false-negative ở ticket khẩn.
+4. Phê duyệt SOP fallback và quyền truy cập dữ liệu tối thiểu.
+
+### Ước lượng chi phí pilot (cần xác nhận nội bộ)
+
+| Hạng mục | Giả định | Ước lượng |
+|---|---|---:|
+| Tích hợp và guardrails | 1 AI engineer × 6 tuần | 30 person-days |
+| Gán nhãn/đánh giá | 2 điều phối viên × 2 giờ/ngày × 10 ngày | 40 person-hours |
+| Hạ tầng LLM | Token và giá model chưa được xác nhận | Đo từ 100 ticket pilot trước, đặt hạn mức ngân sách |
+| Vận hành | Shadow mode 2 tuần, không tự động gửi | Không ảnh hưởng luồng production ngoài thời gian review |
+
+Pilot chỉ nên được phê duyệt khi giá xử lý/ticket và mức tiết kiệm thời gian thực tế được đo từ shadow mode; không dùng các giả định trên để cam kết ROI.
